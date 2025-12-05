@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Secrets
+credentials.json
+token.json
+.env
+
+# Build Artifacts
+dist/
+build/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
