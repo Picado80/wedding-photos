@@ -30,8 +30,16 @@ const SCOPES = ['https://www.googleapis.com/auth/drive.file'];
 const FOLDER_ID = '1hPN8Jrn8liCUmd3LYHGkH6bJ4y9frT1R';
 
 async function getAuthClient() {
-    const credentialsPath = path.join(__dirname, 'credentials.json');
-    const tokenPath = path.join(__dirname, 'token.json');
+    let credentialsPath = path.join(__dirname, 'credentials.json');
+    let tokenPath = path.join(__dirname, 'token.json');
+
+    // Check for Render's default secret path if local files don't exist
+    if (!fs.existsSync(credentialsPath) || !fs.existsSync(tokenPath)) {
+        if (fs.existsSync('/etc/secrets/credentials.json') && fs.existsSync('/etc/secrets/token.json')) {
+            credentialsPath = '/etc/secrets/credentials.json';
+            tokenPath = '/etc/secrets/token.json';
+        }
+    }
 
     // Try OAuth2 first (token.json)
     if (fs.existsSync(tokenPath) && fs.existsSync(credentialsPath)) {
@@ -87,11 +95,8 @@ app.post('/upload', upload.array('photos', 10), async (req, res) => {
     }
 
     try {
-        // Check if credentials exist
-        if (!fs.existsSync(path.join(__dirname, 'credentials.json'))) {
-            console.error("credentials.json not found!");
-            return res.status(500).json({ error: "Server configuration error: Missing credentials." });
-        }
+        // Simple check to ensure we can attempt upload
+        // Real validation happens inside uploadToDrive -> getAuthClient
 
         const uploadPromises = req.files.map(file =>
             uploadToDrive(file.buffer, file.originalname, file.mimetype)
